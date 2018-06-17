@@ -1,0 +1,34 @@
+.container {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    clear: both;
+    text-align: center;
+  }
+
+.big-container {
+    font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+    color: brown;
+    text-shadow: 2px 2px 5px black;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    clear: both;
+}
+
+.food-container
+{
+    position: relative;
+    float: left;
+    width: 274px;
+    margin: 20px 10px 25px;
+    overflow: auto;
+}
+
+img {
+    height: 200px;
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
