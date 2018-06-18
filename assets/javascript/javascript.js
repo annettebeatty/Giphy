@@ -5,6 +5,7 @@ $(document).ready(function()
 
       var favArray = [];
       var firstTime = true;
+      var valid = "abcdefghijklmnopqrstuvwxyz";
 
       // displayFoodInfo function re-renders the HTML to display the appropriate content
       function displayFoodInfo() 
@@ -33,16 +34,18 @@ $(document).ready(function()
             var foodDiv = $("<div class='food-container'>");
 
             // Storing the Title
-            var rating = response.Title;
+            title = titleCase(results[i].title);
+
+            // Remove "GIF"
+            var title = title.replace(/Gif/g,'');
+
+            console.log("new title ", title);
 
             // Creating an element to have the Title displayed
-            var pOne = $("<p>").text("Title: " + results[i].title);
+            var pOne = $("<p>").text(title);
 
             // Displaying the Title
             foodDiv.append(pOne);
-
-            // Storing the Rating
-            var rating = response.Rated;
 
             // Creating an element to have the rating displayed
             var pOne = $("<p>").text("Rating: " + results[i].rating);
@@ -180,11 +183,32 @@ $(document).ready(function()
         var food = $("#food-input").val().trim();
 
         food = food.toLowerCase(food);
+        console.log("food", food);
+
+        // Pulling out my spaces so that I can test if they only enter characters
+        var testit = food.replace(/\s/g, '')
+
+        // Has to have only characters to be valid
+        // Yes, it's a regular expression.  Pulled this from stack overflow, but I know how to use them
+        // This says if all the characters are in the range from a-z
+        if (!/^[a-z]+$/.test(testit)) {
+            console.log("not valid");
+            return;
+        }
+
 
         // Check to make sure it's not already there
         if (foods.indexOf(food) == -1)
         {
-            // Adding movie from the textbox to our array
+            {  // Check if it's already in the fav food array
+            favArray = JSON.parse(localStorage.getItem("favlist"));
+
+            if (favArray.indexOf(food) != -1)
+                // It's already here - don't let them add again
+                return;
+            }
+
+            // Adding food from the textbox to our array
             foods.push(food);
 
             // Calling renderButtons which handles the processing of our food array
@@ -249,12 +273,34 @@ $(document).ready(function()
             var food = $("#food-input").val().trim();
 
             food = food.toLowerCase(food);
+
+            // Pulling out my spaces so that I can test if they only enter characters
+            var testit = food.replace(/\s/g, '')
+
+            // Has to have only characters to be valid
+            // Yes, it's a regular expression.  Pulled this from stack overflow, but I know how to use them
+            // This says if all the character is in the range from a-z
+            if (!/^[a-z]+$/.test(testit)) 
+            {
+                console.log("not valid");
+                return;
+            }
+
+            food = food.toLowerCase(food);
             
             x = foods.indexOf(food);
     
             if (x != -1)
             {  // Exists.  Need to remove from the other array
                 foods.splice(x, 1);
+            }
+            else
+            {  // Check if it's already in the fav food array
+                favArray = JSON.parse(localStorage.getItem("favlist"));
+
+                if (favArray.indexOf(food) != -1)
+                    // It's already here - don't let them add again
+                    return;
             }
 
             favArray.push(food);
@@ -263,6 +309,28 @@ $(document).ready(function()
             // Re-show the buttons
             renderButtons();
         });
+
+        // Pulled this from this site: https://medium.freecodecamp.org/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27
+        function titleCase(str) {
+            // Step 1. Lowercase the string
+            str = str.toLowerCase();
+            // str = "I'm a little tea pot".toLowerCase();
+            // str = "i'm a little tea pot";
+            
+            // Step 2. Split the string into an array of strings
+            str = str.split(' ');
+            // str = "i'm a little tea pot".split(' ');
+            // str = ["i'm", "a", "little", "tea", "pot"];
+            
+            // Step 3. Create the FOR loop
+            for (var i = 0; i < str.length; i++) {
+              str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1); 
+            }
+            
+            // Step 4. Return the output
+            return str.join(' '); // ["I'm", "A", "Little", "Tea", "Pot"].join(' ') => "I'm A Little Tea Pot"
+          }
+
 
       // Adding a click event listener to all elements with a class of "food-btn"
       // This will change the gifs
