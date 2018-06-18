@@ -6,9 +6,14 @@
     text-align: center;
   }
 
+.button-container:nth-child(2)
+{
+    background-color: rgb(135, 166, 250);
+}
+
 .big-container {
     font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
-    color: brown;
+    color:blue;
     text-shadow: 2px 2px 5px black;
     width: 100%;
     max-width: 960px;
@@ -23,6 +28,7 @@
     width: 274px;
     margin: 20px 10px 25px;
     overflow: auto;
+    background-color: lightskyblue;
 }
 
 img {

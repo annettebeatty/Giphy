@@ -1,7 +1,10 @@
 $(document).ready(function()
 {
      // Initial array of foods
-      var foods = ["Cheeseburgers", "Cake"];
+      var foods = ["cheeseburgers", "cake"];
+
+      var favArray = [];
+      var firstTime = true;
 
       // displayFoodInfo function re-renders the HTML to display the appropriate content
       function displayFoodInfo() 
@@ -29,7 +32,16 @@ $(document).ready(function()
             // Creating and storing div tag
             var foodDiv = $("<div class='food-container'>");
 
-            // Storing the rating data
+            // Storing the Title
+            var rating = response.Title;
+
+            // Creating an element to have the Title displayed
+            var pOne = $("<p>").text("Title: " + results[i].title);
+
+            // Displaying the Title
+            foodDiv.append(pOne);
+
+            // Storing the Rating
             var rating = response.Rated;
 
             // Creating an element to have the rating displayed
@@ -69,7 +81,6 @@ $(document).ready(function()
 
       }
 
-      // When a user clicks a check box then delete the specific content
       // (NOTE: Pay attention to the unusual syntax here for the click event.
       // Because we are creating click events on "dynamic" content, we can't just use the usual "on" "click" syntax.)
       $(document).on("click", ".foodgif", function() 
@@ -101,14 +112,24 @@ $(document).ready(function()
       // Function for displaying food data
       function renderButtons() {
 
-        // Deleting the movies prior to adding new movies
+        // Deleting the food prior to adding new food
         // (this is necessary otherwise you will have repeat buttons)
         $("#buttons-view").empty();
+        $("#fav-view").empty();
 
-        // Looping through the array of movies
+        // Check our favorites before rendering the buttons
+        favArray = JSON.parse(localStorage.getItem("favlist"));
+
+        if (firstTime && Array.isArray(favArray)) {
+            // We have favorites.  If there's something there, we'll kill our priming buttons
+            if (favArray.length > 0)
+                foods = [];
+
+            firstTime = false;
+        }
+        // Looping through the array of foods
         for (var i = 0; i < foods.length; i++) {
-
-          // Then dynamicaly generating buttons for each movie in the array
+          // Then dynamicaly generating buttons for each food in the array
           // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
           var a = $("<button>");
           // Adding a class of movie-btn to our button
@@ -120,20 +141,128 @@ $(document).ready(function()
           // Adding the button to the buttons-view div
           $("#buttons-view").append(a);
         }
+
+        console.log("fav array ", favArray)
+
+        if (!Array.isArray(favArray)) {
+            // Nothing here yet
+            favArray = [];
+        }
+        else
+        {
+            // Looping through the favorite array of foods
+            for (var i = 0; i < favArray.length; i++) 
+            {
+                console.log("rendering fav array");
+                // Then dynamicaly generating buttons for each food in the array
+                // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
+                var a = $("<button>");
+                // Adding a class of movie-btn to our button
+                a.addClass("food-btn");
+                // Adding a data-attribute
+                a.attr("data-name", favArray[i]);
+                // Providing the initial button text
+                a.text(favArray[i]);
+                // Adding the button to the buttons-view div
+                $("#fav-view").append(a);
+            }
+        }
       }
 
-      // This function handles events where a food button is clicked
-      $("#add-food").on("click", function(event) {
+      // This function handles when the add food button is clicked
+      $("#add-food").on("click", function(event) 
+      {
         event.preventDefault();
+
+        $("#error").empty();
+
         // This line grabs the input from the textbox
         var food = $("#food-input").val().trim();
 
-        // Adding movie from the textbox to our array
-        foods.push(food);
+        food = food.toLowerCase(food);
 
-        // Calling renderButtons which handles the processing of our movie array
-        renderButtons();
+        // Check to make sure it's not already there
+        if (foods.indexOf(food) == -1)
+        {
+            // Adding movie from the textbox to our array
+            foods.push(food);
+
+            // Calling renderButtons which handles the processing of our food array
+            renderButtons();
+        }
+        else
+            $("#error").text("Entry is already there.");
+
       });
+
+      // This function handles when the remove food button is clicked
+      $("#remove-food").on("click", function(event) 
+      {
+        event.preventDefault();
+        var x;
+
+        $("#error").empty();
+
+        // This line grabs the input from the textbox
+        var food = $("#food-input").val().trim();
+
+        food = food.toLowerCase(food);
+        
+        x = foods.indexOf(food);
+
+        if (x == -1)
+        {
+            // Not in standard array - look now in favorite array
+            favArray = JSON.parse(localStorage.getItem("favlist"));
+            x = favArray.indexOf(food);
+
+            if (x == -1)
+            {
+                $("#error").text("Entry is not found");
+                return;
+            }
+
+            favArray.splice(x, 1);
+            localStorage.setItem("favlist", JSON.stringify(favArray));
+        }
+        else
+        {   // In standard array
+            console.log("want to remove this one ", food, "array element - ", x);
+
+            // Remove from the array
+            foods.splice(x, 1);
+        }
+
+         // Re-show the buttons
+         renderButtons();
+        });
+
+        // This function handles when the add to favorites food button is clicked
+        $("#fav-food").on("click", function(event) 
+        {
+            event.preventDefault();
+            var x;
+    
+            $("#error").empty();
+    
+            // This line grabs the input from the textbox
+            var food = $("#food-input").val().trim();
+
+            food = food.toLowerCase(food);
+            
+            x = foods.indexOf(food);
+    
+            if (x != -1)
+            {  // Exists.  Need to remove from the other array
+                foods.splice(x, 1);
+            }
+
+            favArray.push(food);
+            localStorage.setItem("favlist", JSON.stringify(favArray));
+
+            // Re-show the buttons
+            renderButtons();
+        });
 
       // Adding a click event listener to all elements with a class of "food-btn"
       // This will change the gifs

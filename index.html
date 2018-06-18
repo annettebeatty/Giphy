@@ -30,17 +30,20 @@
         <h1>Food Giphy Search</h1>
 
         <!-- Rendered Buttons will get Dumped Here  -->
+        <div id="fav-view" class="button-container"></div>
         <div id="buttons-view"></div>
 
         <form id="food-form">
-            <label for="food-input">Add a Food</label>
+            <label for="food-input">Enter Food</label>
             <input type="text" id="food-input">
-            <br>
-            
+            <br>    
         </form>
 
         <!-- Button triggers new food to be added -->
+        <div id="error"></div>
         <input id="add-food" type="submit" value="Add a Food">
+        <input id="remove-food" type="submit" value="Remove a Food">
+        <input id="fav-food" type="submit" value="Add to Favorites">
 
         <!-- Gifs will Get Dumped Here -->
         <div id="food-view" class="big-container"></div>
