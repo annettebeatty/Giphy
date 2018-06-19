@@ -6,6 +6,7 @@ $(document).ready(function()
       var favArray = [];
       var firstTime = true;
       var valid = "abcdefghijklmnopqrstuvwxyz";
+      var appendFlag = false;
 
       // displayFoodInfo function re-renders the HTML to display the appropriate content
       function displayFoodInfo() 
@@ -17,21 +18,26 @@ $(document).ready(function()
         console.log("In Displaying the food");
 
         // Clear out last gifs
-        $("#food-view").empty();
+        if (appendFlag == false)
+        {
+            console.log("append flag");
+            $("#food-view").empty();
+        }
+
 
         // Creating an AJAX call for the specific food button being clicked
         $.ajax({
           url: queryURL,
           method: "GET"
-        }).then(function(response) {
-
+        }).then(function(response) 
+        {
           console.log(response);
           var results = response.data;
 
           for (var i = 0; i < results.length; i++)
           {
             // Creating and storing div tag
-            var foodDiv = $("<div class='food-container'>");
+            var foodDiv = $("<div class='col-md-4 food-container'>");
 
             // Storing the Title
             title = titleCase(results[i].title);
@@ -76,7 +82,10 @@ $(document).ready(function()
             foodDiv.append(foodImage);
 
             // Displaying the image
-            $("#food-view").append(foodDiv);
+            if (appendFlag)
+                $("#food-view").prepend(foodDiv); 
+            else
+                $("#food-view").append(foodDiv);
           } // Loop end
 
           $("#food-view").append("</div>");
@@ -123,15 +132,18 @@ $(document).ready(function()
         // Check our favorites before rendering the buttons
         favArray = JSON.parse(localStorage.getItem("favlist"));
 
-        if (firstTime && Array.isArray(favArray)) {
+        if (firstTime && Array.isArray(favArray)) 
+        {
             // We have favorites.  If there's something there, we'll kill our priming buttons
             if (favArray.length > 0)
                 foods = [];
 
             firstTime = false;
         }
+
         // Looping through the array of foods
-        for (var i = 0; i < foods.length; i++) {
+        for (var i = 0; i < foods.length; i++) 
+        {
           // Then dynamicaly generating buttons for each food in the array
           // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
           var a = $("<button>");
@@ -177,45 +189,40 @@ $(document).ready(function()
       {
         event.preventDefault();
 
-        $("#error").empty();
-
         // This line grabs the input from the textbox
         var food = $("#food-input").val().trim();
 
         food = food.toLowerCase(food);
-        console.log("food", food);
 
-        // Pulling out my spaces so that I can test if they only enter characters
-        var testit = food.replace(/\s/g, '')
+        // Check it - clean and check returns index of the array
+        x = cleanAndcheck(food, 1);
 
-        // Has to have only characters to be valid
-        // Yes, it's a regular expression.  Pulled this from stack overflow, but I know how to use them
-        // This says if all the characters are in the range from a-z
-        if (!/^[a-z]+$/.test(testit)) {
-            console.log("not valid");
-            return;
-        }
-
-
-        // Check to make sure it's not already there
-        if (foods.indexOf(food) == -1)
+        console.log("return from clean", x);
+        console.log("food ", food);
+        switch (x)
         {
-            {  // Check if it's already in the fav food array
-            favArray = JSON.parse(localStorage.getItem("favlist"));
+            case -1:  // bad entry
+                return;
 
-            if (favArray.indexOf(food) != -1)
-                // It's already here - don't let them add again
+            case 0: // Not in either array
+            {
+                // Adding food from the textbox to our array
+                foods.push(food);
+                break;
+            }
+            case 1: 
+            {
+                // its already there
                 return;
             }
-
-            // Adding food from the textbox to our array
-            foods.push(food);
-
-            // Calling renderButtons which handles the processing of our food array
-            renderButtons();
+            case 2: // It's in the favorites array, need to return
+            {
+                return;
+            }
         }
-        else
-            $("#error").text("Entry is already there.");
+
+        // Calling renderButtons which handles the processing of our food array
+        renderButtons();
 
       });
 
@@ -266,13 +273,81 @@ $(document).ready(function()
         {
             event.preventDefault();
             var x;
-    
-            $("#error").empty();
-    
+
             // This line grabs the input from the textbox
             var food = $("#food-input").val().trim();
 
             food = food.toLowerCase(food);
+
+            // Check it - clean and check returns index of the array
+            x = cleanAndcheck(food, 2);
+    
+            switch (x)
+            {
+                case -1:  // bad entry
+                    return;
+                case 0: // Not in either array
+                {
+                    break;
+                }
+                case 1: 
+                {
+                    // if it's in the foods array need to take it out
+                    console.log("Foods ", foods);
+                    x = foods.indexOf(food);
+                    console.log("Food in food array: ", x);
+                    foods.splice(x, 1);
+                    console.log("Foods ", foods);
+                    break;
+                }
+                case 2: // if it's in the favorites array, need to return
+                {
+                    return;
+                    // We're going to add it to the fav array, so remove it from the foods array
+                }
+            }
+
+            // Needs to go into the fav array
+            favArray.push(food);
+            localStorage.setItem("favlist", JSON.stringify(favArray));
+
+            // Re-show the buttons
+            renderButtons();
+        });
+
+        // This function handles when the append button is pressed
+        $("#switch-id").on("click", function(event) 
+        {
+            $(this).attr("data-state", "animate");
+            var clicked = $(this).attr("isItOn");
+
+            console.log("clicked add more is ", clicked);
+
+            if (clicked == "true")
+            {
+                appendFlag = false;
+                $(this).attr("isItOn", "false");
+
+            }
+            else
+            {
+                appendFlag = true;
+                console.log("change it to true");
+                $(this).attr("isItOn", "true");
+            }
+
+            console.log("New clicked add more is ", $(this).attr("isItOn"));
+        });
+
+        function cleanAndcheck(food, caller)
+        {
+            // Returns 1 if its in the foods array
+            // Returns 2 if its not in foods array, but in the fav array
+            // Returns 0 if its not in either array
+            // Returns -1 if it's not valid
+            console.log("check food ", food);
+
+            $("#error").empty();
 
             // Pulling out my spaces so that I can test if they only enter characters
             var testit = food.replace(/\s/g, '')
@@ -283,32 +358,38 @@ $(document).ready(function()
             if (!/^[a-z]+$/.test(testit)) 
             {
                 console.log("not valid");
-                return;
+                return -1;
             }
 
-            food = food.toLowerCase(food);
-            
             x = foods.indexOf(food);
-    
-            if (x != -1)
-            {  // Exists.  Need to remove from the other array
-                foods.splice(x, 1);
-            }
-            else
-            {  // Check if it's already in the fav food array
+            
+            // Check if it's in the foods array
+            if (x == -1)
+            {    // It's not in the foods array
+
+                // Check if it's already in the fav food array
                 favArray = JSON.parse(localStorage.getItem("favlist"));
 
-                if (favArray.indexOf(food) != -1)
-                    // It's already here - don't let them add again
-                    return;
+                console.log("favorite array ", favArray)
+
+                if (Array.isArray(favArray))
+                {
+                    if (favArray.indexOf(food) != -1)
+                    {
+                        // It's in the favorite array
+                        console.log("In the fav array");
+                        return 2;
+                    }
+                }
+
+                // It's not in the fav or foods array
+                return 0;
             }
-
-            favArray.push(food);
-            localStorage.setItem("favlist", JSON.stringify(favArray));
-
-            // Re-show the buttons
-            renderButtons();
-        });
+            else // it's in the foods array
+            {
+                return 1;
+            }
+        }
 
         // Pulled this from this site: https://medium.freecodecamp.org/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27
         function titleCase(str) {

@@ -8,11 +8,13 @@
   <!-- Added link to the jQuery Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+  <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
   <script type="text/javascript" src="assets/javascript/javascript.js"></script>
 
   <!-- Bootstrap CDN -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   
   <style type="text/css">
@@ -41,12 +43,18 @@
 
         <!-- Button triggers new food to be added -->
         <div id="error"></div>
-        <input id="add-food" type="submit" value="Add a Food">
-        <input id="remove-food" type="submit" value="Remove a Food">
-        <input id="fav-food" type="submit" value="Add to Favorites">
-
+        <div class="foodbuttons">
+            <input id="add-food" type="submit" value="Add a Food">
+            <input id="remove-food" type="submit" value="Remove a Food">
+            <input id="fav-food" type="submit" value="Add to Favorites">
+            <span class="switch">
+                <input type="checkbox" class="switch" id="switch-id" isItOn="false">
+                <label for="switch-id">Append</label>
+              </span>
         <!-- Gifs will Get Dumped Here -->
-        <div id="food-view" class="big-container"></div>
+        <div class="row">
+            <div id="food-view" class="big-container"></div>
+        </div>
     </div>
 </body>
 
