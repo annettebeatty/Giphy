@@ -4,6 +4,7 @@
     margin: 0 auto;
     clear: both;
     text-align: center;
+    align-content: center;
   }
 
 .button-container:nth-child(2)
@@ -37,6 +38,13 @@ p {
     padding: 0px;
 }
 
+.movie
+{
+    background-color: rgb(172, 243, 243);
+    width: 500px;
+    margin: auto;
+}
+
 img {
     height: 200px;
     width: 100%;
@@ -44,3 +52,7 @@ img {
     margin-right: 0px;
 }
 
+.form-group .form-control {
+    width: 150px;
+    margin: auto;
+}

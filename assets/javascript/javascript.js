@@ -7,22 +7,59 @@ $(document).ready(function()
       var firstTime = true;
       var valid = "abcdefghijklmnopqrstuvwxyz";
       var appendFlag = false;
+      var lastDBvalue = "";
 
       // displayFoodInfo function re-renders the HTML to display the appropriate content
       function displayFoodInfo() 
       {
         var food = $(this).attr("data-name");
-        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
-        food + "&api_key=yCyV2ynWSh8G8J9AU8zCDfxSurChUHeL&limit=10";
+        var queryURL = "";
+
+        // Clear error message
+        $("#error").empty();
         
         console.log("In Displaying the food");
+        var dbValue = $('input[name=optradio]:checked').val();
 
+        console.log("Last DB value", lastDBvalue);
+
+        console.log("DB value clicked is ", dbValue);
+        console.log("append flag = ", appendFlag);
+        // *** Need logic here to not append if the last DBvalue isn't equal to the current one **
         // Clear out last gifs
+
         if (appendFlag == false)
         {
-            console.log("append flag");
+            console.log("append flag is false");
             $("#food-view").empty();
         }
+
+        if (lastDBvalue != dbValue)
+            $("#food-view").empty();
+
+        switch (dbValue)
+        {
+            case "giphy":
+            {
+                queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+        food + "&api_key=yCyV2ynWSh8G8J9AU8zCDfxSurChUHeL&limit=10";
+                break;
+            }
+
+            case "omdb":
+            {
+                queryURL = "https://www.omdbapi.com/?t=" +
+                food + "&y=&plot=short&apikey=trilogy";
+                        break;
+            }
+
+            default:
+            {
+                $("#error").text("DB is not found");
+                return;
+            }
+        }
+
 
 
         // Creating an AJAX call for the specific food button being clicked
@@ -31,19 +68,67 @@ $(document).ready(function()
           method: "GET"
         }).then(function(response) 
         {
-          console.log(response);
-          var results = response.data;
+          var title;
+          var ratings;
+          var still;
+          var animate;
 
-          for (var i = 0; i < results.length; i++)
+          console.log(response);
+
+          // OMDB returned no data
+          if (response.Response == "False")
+              return;
+
+          if (dbValue == "giphy")
           {
+            var results = response.data;
+            var entries = results.length;
+          }
+          else  
+          {
+            // It's a movie - they only return one entrie
+            var results = response;
+            var entries = 1;
+          }
+
+          for (var i = 0; i < entries; i++)
+          {
+            
             // Creating and storing div tag
             var foodDiv = $("<div class='col-md-4 food-container'>");
 
-            // Storing the Title
-            title = titleCase(results[i].title);
+            switch (dbValue)
+            {
+                case "giphy":  // Giphy DB
+                    // Calling titleCase to clean up the title 
+                    title = titleCase(results[i].title);
 
-            // Remove "GIF"
-            var title = title.replace(/Gif/g,'');
+                    // Remove "GIF"
+                    title = title.replace(/Gif/g,'');
+
+                    // Set ratings
+                    ratings = results[i].rating
+
+                    // set the images
+                    still = results[i].images.fixed_height_still.url; 
+                    animate = results[i].images.fixed_height.url;
+                    break;
+    
+                case "omdb":   // OMDB DB
+                {
+                    title = response.Title;
+                    ratings = response.Rated;
+                    console.log("Poster", response.Poster);
+                    still = response.Poster;
+                    animate = response.Poster;
+                    console.log("OMBD Title", title, " Rating: ", ratings, "Poster ", still);
+                    break;
+                }
+                case "bands":  // Bands DB
+                {
+                    return;
+                }
+            }
 
             console.log("new title ", title);
 
@@ -54,16 +139,14 @@ $(document).ready(function()
             foodDiv.append(pOne);
 
             // Creating an element to have the rating displayed
-            var pOne = $("<p>").text("Rating: " + results[i].rating);
+            var pOne = $("<p>").text("Rating: " + ratings);
 
             // Displaying the rating
             foodDiv.append(pOne);
 
             // Creating and storing the image tag
+            // ** CHECK HERE ** If I want, can opt not to display if no poster for a movie
             var foodImage = $("<img>");
-
-            var still = results[i].images.fixed_height_still.url; 
-            var animate = results[i].images.fixed_height.url;
 
             // Add still and moving gif tags.  We'll swap between the two
             foodImage.attr("data-still", still);
@@ -76,7 +159,22 @@ $(document).ready(function()
             // Adding attribute and buttons so we can start and stop this puppy
             foodImage.attr("fooddata", i);
             foodImage.addClass("foodgif");
+            
 
+            // If this is a movie, let's give them a few more details
+            if (dbValue == "omdb")
+            {
+                foodDiv.append($("<p>").text("Released: " + response.Released));
+                console.log("Genre ", response.Genre);
+                foodDiv.append($("<p>").text("Type: " + response.Genre));
+                foodDiv.removeClass("food-container col-md-4");
+                foodDiv.addClass("movie");
+            }
+            else
+            {
+                foodDiv.addClass("food-container col-md-4");
+                foodDiv.removeClass("movie");
+            }
 
             // Appending the image 
             foodDiv.append(foodImage);
@@ -89,6 +187,9 @@ $(document).ready(function()
           } // Loop end
 
           $("#food-view").append("</div>");
+
+          // Save the state of the last time we did this
+          lastDBvalue = dbValue;
         });
 
       }
@@ -318,16 +419,13 @@ $(document).ready(function()
         // This function handles when the append button is pressed
         $("#switch-id").on("click", function(event) 
         {
-            $(this).attr("data-state", "animate");
             var clicked = $(this).attr("isItOn");
-
-            console.log("clicked add more is ", clicked);
 
             if (clicked == "true")
             {
                 appendFlag = false;
                 $(this).attr("isItOn", "false");
-
+                console.log("change it to false");
             }
             else
             {
@@ -337,6 +435,14 @@ $(document).ready(function()
             }
 
             console.log("New clicked add more is ", $(this).attr("isItOn"));
+        });
+
+        // This function handles when the append button is pressed
+        $("#db-option").on("click", function(event) 
+        {
+            var selValue = $('input[name=optradio]:checked').val();
+
+            console.log("clicked is ", selValue);
         });
 
         function cleanAndcheck(food, caller)
