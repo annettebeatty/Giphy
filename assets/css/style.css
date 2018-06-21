@@ -1,3 +1,13 @@
+h1{
+    font-family: 'Acme', sans-serif;
+    font-size: 50px;
+}
+
+body {
+    background-image: url(../images/popcorn.png);
+    background-size: cover;
+}
+
 .container {
     width: 100%;
     max-width: 960px;
@@ -43,6 +53,12 @@ p {
     background-color: rgb(172, 243, 243);
     width: 500px;
     margin: auto;
+}
+
+.movie + .movie 
+{
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 img {

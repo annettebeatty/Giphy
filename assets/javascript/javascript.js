@@ -16,7 +16,7 @@ $(document).ready(function()
         var queryURL = "";
 
         // Clear error message
-        $("#error").empty();
+        $("#msg").empty();
         
         console.log("In Displaying the food");
         var dbValue = $('input[name=optradio]:checked').val();
@@ -25,18 +25,19 @@ $(document).ready(function()
 
         console.log("DB value clicked is ", dbValue);
         console.log("append flag = ", appendFlag);
-        // *** Need logic here to not append if the last DBvalue isn't equal to the current one **
-        // Clear out last gifs
 
+        // If we're not appending, then clear out the last GIFs/movies
         if (appendFlag == false)
         {
             console.log("append flag is false");
             $("#food-view").empty();
         }
 
+        // I don't allow appending different formats.  We'll clear out the last display
         if (lastDBvalue != dbValue)
             $("#food-view").empty();
 
+        // Build a query based on what we're searching for - GIFs or OMDB
         switch (dbValue)
         {
             case "giphy":
@@ -55,12 +56,10 @@ $(document).ready(function()
 
             default:
             {
-                $("#error").text("DB is not found");
+                $("#msg").text("DB is not found");
                 return;
             }
         }
-
-
 
         // Creating an AJAX call for the specific food button being clicked
         $.ajax({
@@ -77,8 +76,12 @@ $(document).ready(function()
 
           // OMDB returned no data
           if (response.Response == "False")
-              return;
+          {
+            $("#msg").text("No data found");
+            return;
+          }
 
+          // Set response based on which source we're hitting
           if (dbValue == "giphy")
           {
             var results = response.data;
@@ -100,16 +103,22 @@ $(document).ready(function()
             switch (dbValue)
             {
                 case "giphy":  // Giphy DB
+                    // Give instructions
+                    $("#msg").text("Click image to toggle animation");
+
+                    // Set the page title
+                    $("#title").html("<h1>Food GIF Search</h1>");
+
                     // Calling titleCase to clean up the title 
                     title = titleCase(results[i].title);
 
-                    // Remove "GIF"
+                    // Remove "GIF" from the title
                     title = title.replace(/Gif/g,'');
 
                     // Set ratings
                     ratings = results[i].rating
 
-                    // set the images
+                    // Set the images
                     still = results[i].images.fixed_height_still.url; 
                     animate = results[i].images.fixed_height.url;
                     break;
@@ -119,14 +128,23 @@ $(document).ready(function()
                     title = response.Title;
                     ratings = response.Rated;
                     console.log("Poster", response.Poster);
-                    still = response.Poster;
-                    animate = response.Poster;
+
+                    // Set the title
+                    $("#title").html("<h1>Food OMBD Search</h1>");
+
+                    // If no poster, then give a default image
+                    if (response.Poster == "N/A")
+                    {
+                        still = "assets/images/film.jpg";
+                        animate = "assets/imafes/film.jpg";
+                    }
+                    else
+                    {
+                        still = response.Poster;
+                        animate = response.Poster;
+                    }
                     console.log("OMBD Title", title, " Rating: ", ratings, "Poster ", still);
                     break;
-                }
-                case "bands":  // Bands DB
-                {
-                    return;
                 }
             }
 
@@ -145,10 +163,9 @@ $(document).ready(function()
             foodDiv.append(pOne);
 
             // Creating and storing the image tag
-            // ** CHECK HERE ** If I want, can opt not to display if no poster for a movie
             var foodImage = $("<img>");
 
-            // Add still and moving gif tags.  We'll swap between the two
+            // Add still and moving gif tags.
             foodImage.attr("data-still", still);
             foodImage.attr("data-animate", animate);
             foodImage.attr("data-state", "still");
@@ -160,7 +177,6 @@ $(document).ready(function()
             foodImage.attr("fooddata", i);
             foodImage.addClass("foodgif");
             
-
             // If this is a movie, let's give them a few more details
             if (dbValue == "omdb")
             {
@@ -188,27 +204,29 @@ $(document).ready(function()
 
           $("#food-view").append("</div>");
 
-          // Save the state of the last time we did this
+          // Save the state of the last time we did this so we know if it was
+          // an OMDB or an GIF
           lastDBvalue = dbValue;
         });
 
       }
 
+      // This function will set the source to a GIF or a still image.  The effect for the user
+      // will look like starting or stopping the animation.
+
       // (NOTE: Pay attention to the unusual syntax here for the click event.
       // Because we are creating click events on "dynamic" content, we can't just use the usual "on" "click" syntax.)
       $(document).on("click", ".foodgif", function() 
       {
-        // Get the number of the button from its data attribute and hold in a variable called  toDoNumber.
-        // var foodNumber = $(this).attr("fooddata");
 
         console.log("clicked on the image")
 
-        // See if this thing is moving or not
+        // Get the number of the button from its data attribute and hold in a variable called state
         var state = $(this).attr("data-state");
 
-        // If the clicked image's state is still, update its src attribute to what its data-animate value is.
-        // Then, set the image's data-state to animate
-        // Else set src to the data-still value
+        // If the clicked image's state is still, set the source to the animated GIF
+        // Then, reset the image's data-state to animate
+        // Else set src to the data-still value and set source accordingly
         if (state === "still") 
         {
           $(this).attr("src", $(this).attr("data-animate"));
@@ -222,20 +240,21 @@ $(document).ready(function()
 
        });
 
-      // Function for displaying food data
+      // This function will render buttons dynamically created by the user based on subjects
+      // they want us to search on
       function renderButtons() {
-
-        // Deleting the food prior to adding new food
+        // Deleting the buttons view prior to adding these new buttons
         // (this is necessary otherwise you will have repeat buttons)
         $("#buttons-view").empty();
         $("#fav-view").empty();
 
-        // Check our favorites before rendering the buttons
         favArray = JSON.parse(localStorage.getItem("favlist"));
 
+        // Check our favorites array before rendering the buttons
         if (firstTime && Array.isArray(favArray)) 
         {
-            // We have favorites.  If there's something there, we'll kill our priming buttons
+            // We have favorites.  If there's something there, we'll delete the defaul 
+            // buttons we use to prime the user
             if (favArray.length > 0)
                 foods = [];
 
@@ -245,10 +264,10 @@ $(document).ready(function()
         // Looping through the array of foods
         for (var i = 0; i < foods.length; i++) 
         {
-          // Then dynamicaly generating buttons for each food in the array
+          // Then dynamicaly generating buttons for each food image in the array
           // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
           var a = $("<button>");
-          // Adding a class of movie-btn to our button
+          // Adding a class of food-btn to our button
           a.addClass("food-btn");
           // Adding a data-attribute
           a.attr("data-name", foods[i]);
@@ -261,7 +280,7 @@ $(document).ready(function()
         console.log("fav array ", favArray)
 
         if (!Array.isArray(favArray)) {
-            // Nothing here yet
+            // Nothing here yet, so initialize the array
             favArray = [];
         }
         else
@@ -273,7 +292,7 @@ $(document).ready(function()
                 // Then dynamicaly generating buttons for each food in the array
                 // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
                 var a = $("<button>");
-                // Adding a class of movie-btn to our button
+                // Adding a class of food-btn to our button
                 a.addClass("food-btn");
                 // Adding a data-attribute
                 a.attr("data-name", favArray[i]);
@@ -285,7 +304,7 @@ $(document).ready(function()
         }
       }
 
-      // This function handles when the add food button is clicked
+      // This function will add a new button on the page based on the new subject input
       $("#add-food").on("click", function(event) 
       {
         event.preventDefault();
@@ -293,9 +312,10 @@ $(document).ready(function()
         // This line grabs the input from the textbox
         var food = $("#food-input").val().trim();
 
+        // Keep the input consistent by making everything lower case
         food = food.toLowerCase(food);
 
-        // Check it - clean and check returns index of the array
+        // Check the entry and clean it up
         x = cleanAndcheck(food, 1);
 
         console.log("return from clean", x);
@@ -313,10 +333,10 @@ $(document).ready(function()
             }
             case 1: 
             {
-                // its already there
+                // its already there, so no need to re-add it.  Just return to the user
                 return;
             }
-            case 2: // It's in the favorites array, need to return
+            case 2: // It's in the favorites array, so we'll return and not add it
             {
                 return;
             }
@@ -327,33 +347,35 @@ $(document).ready(function()
 
       });
 
-      // This function handles when the remove food button is clicked
+      // This function will remove a button from the page
       $("#remove-food").on("click", function(event) 
       {
         event.preventDefault();
         var x;
 
-        $("#error").empty();
+        $("#msg").empty();
 
         // This line grabs the input from the textbox
         var food = $("#food-input").val().trim();
 
         food = food.toLowerCase(food);
         
+        // See if this is in the array
         x = foods.indexOf(food);
 
         if (x == -1)
         {
-            // Not in standard array - look now in favorite array
+            // Not in standard, temporary array - look now in favorite array
             favArray = JSON.parse(localStorage.getItem("favlist"));
             x = favArray.indexOf(food);
 
             if (x == -1)
-            {
-                $("#error").text("Entry is not found");
+            {   // Asking to delete an entry that isn't there, so return to the user
+                $("#msg").text("Entry is not found");
                 return;
-            }
-
+            }  
+    
+            // It's in the favorites array
             favArray.splice(x, 1);
             localStorage.setItem("favlist", JSON.stringify(favArray));
         }
@@ -369,7 +391,8 @@ $(document).ready(function()
          renderButtons();
         });
 
-        // This function handles when the add to favorites food button is clicked
+        // This will add a button to favorites as long as the entry is valid and 
+        // doesn't already exist as a button
         $("#fav-food").on("click", function(event) 
         {
             event.preventDefault();
@@ -416,7 +439,8 @@ $(document).ready(function()
             renderButtons();
         });
 
-        // This function handles when the append button is pressed
+        // If append is clicked, set the flag so we know if we need to clear the last
+        // results or not
         $("#switch-id").on("click", function(event) 
         {
             var clicked = $(this).attr("isItOn");
@@ -437,7 +461,7 @@ $(document).ready(function()
             console.log("New clicked add more is ", $(this).attr("isItOn"));
         });
 
-        // This function handles when the append button is pressed
+        // Sets the source where we'll pull the data - either Giphy or OMDB
         $("#db-option").on("click", function(event) 
         {
             var selValue = $('input[name=optradio]:checked').val();
@@ -445,21 +469,22 @@ $(document).ready(function()
             console.log("clicked is ", selValue);
         });
 
+        // Error checks user input
+        // Returns 1 if its in the foods array
+        // Returns 2 if its not in foods array, but in the fav array
+        // Returns 0 if its not in either array
+        // Returns -1 if it's not valid
         function cleanAndcheck(food, caller)
         {
-            // Returns 1 if its in the foods array
-            // Returns 2 if its not in foods array, but in the fav array
-            // Returns 0 if its not in either array
-            // Returns -1 if it's not valid
             console.log("check food ", food);
 
-            $("#error").empty();
+            $("#msg").empty();
 
             // Pulling out my spaces so that I can test if they only enter characters
             var testit = food.replace(/\s/g, '')
 
             // Has to have only characters to be valid
-            // Yes, it's a regular expression.  Pulled this from stack overflow, but I know how to use them
+            // Pulled from stack overflow - regular expressions
             // This says if all the character is in the range from a-z
             if (!/^[a-z]+$/.test(testit)) 
             {
@@ -496,7 +521,8 @@ $(document).ready(function()
                 return 1;
             }
         }
-
+    
+        // This will capitalize the first letter of every word in a title
         // Pulled this from this site: https://medium.freecodecamp.org/three-ways-to-title-case-a-sentence-in-javascript-676a9175eb27
         function titleCase(str) {
             // Step 1. Lowercase the string
@@ -519,8 +545,8 @@ $(document).ready(function()
           }
 
 
-      // Adding a click event listener to all elements with a class of "food-btn"
-      // This will change the gifs
+      // This executes when someone clicks on a GIF.  The effect will be to call
+      // displayFoodInfo to redraw the 
       $(document).on("click", ".food-btn", displayFoodInfo);
 
       // Calling the renderButtons function to display the intial buttons
