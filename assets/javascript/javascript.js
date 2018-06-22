@@ -1,7 +1,7 @@
 $(document).ready(function()
 {
      // Initial array of foods
-      var foods = ["cheeseburgers", "cake"];
+      var foods = ["popcorn", "candy"];
 
       var favArray = [];
       var firstTime = true;
@@ -175,7 +175,7 @@ $(document).ready(function()
 
             // Adding attribute and buttons so we can start and stop this puppy
             foodImage.attr("fooddata", i);
-            foodImage.addClass("foodgif");
+            foodImage.addClass("foodgif responsive");
             
             // If this is a movie, let's give them a few more details
             if (dbValue == "omdb")

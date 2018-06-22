@@ -28,7 +28,7 @@ body {
     text-shadow: 2px 2px 5px black;
     width: 100%;
     max-width: 960px;
-    margin: 0 auto;
+    margin: auto;
     clear: both;
 }
 
@@ -41,7 +41,7 @@ p {
     position: relative;
     float: left;
     width: 274px;
-    max-height: 250px; 
+    height: 250px; 
     margin: 20px 10px 20px;
     overflow: auto;
     background-color: lightskyblue;
@@ -61,11 +61,18 @@ p {
     margin-bottom: 20px;
 }
 
+/*
 img {
     height: 200px;
     width: 100%;
     margin-left: 0px;
     margin-right: 0px;
+}
+*/
+
+img {
+    width: 100%;
+    height: auto;
 }
 
 .form-group .form-control {
