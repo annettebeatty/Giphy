@@ -8,6 +8,8 @@ $(document).ready(function()
       var valid = "abcdefghijklmnopqrstuvwxyz";
       var appendFlag = false;
       var lastDBvalue = "";
+      var lastFoodValue = "";
+      var foodOffset = 0;
 
       // displayFoodInfo function re-renders the HTML to display the appropriate content
       function displayFoodInfo() 
@@ -26,24 +28,44 @@ $(document).ready(function()
         console.log("DB value clicked is ", dbValue);
         console.log("append flag = ", appendFlag);
 
-        // If we're not appending, then clear out the last GIFs/movies
-        if (appendFlag == false)
+
+        if (lastFoodValue == food)
         {
-            console.log("append flag is false");
-            $("#food-view").empty();
+            foodOffset += 9;
         }
+        else
+        {
+            // If we're not appending, then clear out the last GIFs/movies
+            if (appendFlag == false)
+            {
+                console.log("append flag is false");
+                $("#food-view").empty();
+            }
+
+            foodOffset = 0;
+        }
+
+
 
         // I don't allow appending different formats.  We'll clear out the last display
         if (lastDBvalue != dbValue)
+        {
             $("#food-view").empty();
+            foodOffset = 0;
+        }
 
         // Build a query based on what we're searching for - GIFs or OMDB
         switch (dbValue)
         {
             case "giphy":
             {
+                // Replace spaces with "+"
+                var foodStr = food.replace(/ /g,"+");
+                console.log("foodStr = ", foodStr);
+
                 queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
-        food + "&api_key=yCyV2ynWSh8G8J9AU8zCDfxSurChUHeL&limit=10";
+                foodStr + "&offset=" + foodOffset + "&api_key=yCyV2ynWSh8G8J9AU8zCDfxSurChUHeL&limit=10";
+
                 break;
             }
 
@@ -104,7 +126,7 @@ $(document).ready(function()
             {
                 case "giphy":  // Giphy DB
                     // Give instructions
-                    $("#msg").text("Click image to toggle animation");
+                    $("#msg").text("Click image to toggle animation.  For more GIFs, click button again.");
 
                     // Set the page title
                     $("#title").html("<h1>Food GIF Search</h1>");
@@ -114,6 +136,8 @@ $(document).ready(function()
 
                     // Remove "GIF" from the title
                     title = title.replace(/Gif/g,'');
+
+                    console.log("new title ", title , "ID", results[i].id);
 
                     // Set ratings
                     ratings = results[i].rating
@@ -148,7 +172,7 @@ $(document).ready(function()
                 }
             }
 
-            console.log("new title ", title);
+
 
             // Creating an element to have the Title displayed
             var pOne = $("<p>").text(title);
@@ -196,7 +220,7 @@ $(document).ready(function()
             foodDiv.append(foodImage);
 
             // Displaying the image
-            if (appendFlag)
+            if ((appendFlag) || lastFoodValue == food) // If the append flag is on or we clicked the same button
                 $("#food-view").prepend(foodDiv); 
             else
                 $("#food-view").append(foodDiv);
@@ -207,6 +231,7 @@ $(document).ready(function()
           // Save the state of the last time we did this so we know if it was
           // an OMDB or an GIF
           lastDBvalue = dbValue;
+          lastFoodValue = food;
         });
 
       }
@@ -469,7 +494,9 @@ $(document).ready(function()
             console.log("clicked is ", selValue);
         });
 
-        // Error checks user input
+        // This does 2 things: 
+        // 1) It does error checking on user input (Need to input something, no special characters or numbers)
+        // 2) It also returns if this item doesn't exist or, if it does, where it exists
         // Returns 1 if its in the foods array
         // Returns 2 if its not in foods array, but in the fav array
         // Returns 0 if its not in either array
@@ -543,7 +570,6 @@ $(document).ready(function()
             // Step 4. Return the output
             return str.join(' '); // ["I'm", "A", "Little", "Tea", "Pot"].join(' ') => "I'm A Little Tea Pot"
           }
-
 
       // This executes when someone clicks on a GIF.  The effect will be to call
       // displayFoodInfo to redraw the 
