@@ -5,7 +5,7 @@ h1{
 
 body {
     background-image: url(../images/popcorn.png);
-    background-size: cover;
+    background-size: contain;
 }
 
 .container {

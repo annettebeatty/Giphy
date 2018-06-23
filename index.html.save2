@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Food Giphy</title>
+
+  <!-- Added link to the jQuery Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+  <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+  <script type="text/javascript" src="assets/javascript/javascript.js"></script>
+
+  <!-- Bootstrap CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Acme" rel="stylesheet">
+  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+    <div class=container>
+        <h1 id="title" style="background-color: white">Food GIF Search</h1>
+        <!-- Rendered Buttons will get Dumped Here  -->
+        <div id="fav-view" class="button-container"></div>
+        <div id="buttons-view"></div>
+
+        <form id="food-form">
+            <label for="food-input">Enter Food</label>
+            <input type="text" id="food-input">
+            <br>    
+        </form>
+
+        <!-- Button triggers new food to be added -->
+        <strong><div id="msg"></div></strong>
+        <div class="foodbuttons">
+            <input id="add-food" type="submit" value="Add a Food">
+            <input id="remove-food" type="submit" value="Remove a Food">
+            <input id="fav-food" type="submit" value="Add to Favorites">
+            <span class="switch">
+                <input type="checkbox" class="switch" id="switch-id" isItOn="false">
+                <label for="switch-id">Keep Previous</label>
+                <input type="checkbox" class="switch" id="download-id" isItOn="false">
+                <label for="download-id">Download</label>
+              </span>
+        </div>
+
+        <div class="container">
+                <form>
+                    <label class="db-option">
+                    <input type="radio" name="optradio" value="giphy" checked="checked">GIF
+                    </label>
+                    <label class="radio-inline">
+                    <input type="radio" name="optradio" value="omdb">OMDB
+                    </label>
+                </form>
+        </div>
+
+        <!-- Gifs will Get Dumped Here -->
+        <div class="container">
+            <div class="row">
+                <div id="food-view" class="big-container"></div>
+            </div>
+        </div>
+</body>
+
+</html>

@@ -7,6 +7,7 @@ $(document).ready(function()
       var firstTime = true;
       var valid = "abcdefghijklmnopqrstuvwxyz";
       var appendFlag = false;
+      var downloadFlag = false;
       var lastDBvalue = "";
       var lastFoodValue = "";
       var foodOffset = 0;
@@ -31,25 +32,24 @@ $(document).ready(function()
         // Check if we're pushing the same button again.  If we are, we'll give them the 
         // next 10 GIFs
         if (lastFoodValue == food)
-        {   
-            // Same category, so we'll ask Giphy for the next 10 results by giving an offset
+        {   // Same category, so we'll ask Giphy for the next 10 results by giving an offset
             foodOffset += 9;
         }
         else
         {
+            // If we're not appending, then clear out the last GIFs/movies
+            if (appendFlag == false)
+            {
+                console.log("append flag is false");
+                $("#food-view").empty();
+            }
+
             // Since this is a different category, start from a zero offset
             foodOffset = 0;
         }
 
-        // If we're not appending, then clear out the last GIFs/movies
-        if (appendFlag == false)
-        {
-            console.log("append flag is false");
-            $("#food-view").empty();
-        }
-
         // I don't allow appending different formats.  We'll clear out the last display
-        if ((lastDBvalue != dbValue))
+        if (lastDBvalue != dbValue)
         {
             $("#food-view").empty();
             foodOffset = 0;
@@ -127,7 +127,7 @@ $(document).ready(function()
             {
                 case "giphy":  // Giphy DB
                     // Give instructions
-                    $("#msg").text("Click image to toggle animation.  Repeat clicking on the same category button gets the nexts 10 GIFs.");
+                    $("#msg").text("Click image to toggle animation.  For more GIFs, click button again.");
 
                     // Set the page title
                     $("#title").html("<h1>Food GIF Search</h1>");
@@ -172,6 +172,8 @@ $(document).ready(function()
                     break;
                 }
             }
+
+
 
             // Creating an element to have the Title displayed
             var pOne = $("<p>").text(title);
@@ -245,23 +247,35 @@ $(document).ready(function()
 
         console.log("clicked on the image")
 
+
+
         // Get the number of the button from its data attribute and hold in a variable called state
         var state = $(this).attr("data-state");
 
-        // If the clicked image's state is still, set the source to the animated GIF
-        // Then, reset the image's data-state to animate
-        // Else set src to the data-still value and set source accordingly
-        if (state === "still") 
+        // ***** WORKING HERE *****
+        // Check the state.  If download flag is on, we download and don't animate
+       // if (downloadFlag)
+       // {
+       //     var source = $(this).attr("src");
+        //    console.log("Source", source)
+       //     window.location.href = source;
+       // }
+       // else
         {
-          $(this).attr("src", $(this).attr("data-animate"));
-          $(this).attr("data-state", "animate");
-        } 
-        else 
-        {
-          $(this).attr("src", $(this).attr("data-still"));
-          $(this).attr("data-state", "still");
+            // If the clicked image's state is still, set the source to the animated GIF
+            // Then, reset the image's data-state to animate
+            // Else set src to the data-still value and set source accordingly
+            if (state === "still") 
+            {
+            $(this).attr("src", $(this).attr("data-animate"));
+            $(this).attr("data-state", "animate");
+            } 
+            else 
+            {
+            $(this).attr("src", $(this).attr("data-still"));
+            $(this).attr("data-state", "still");
+            }
         }
-
        });
 
       // This function will render buttons dynamically created by the user based on subjects
@@ -465,9 +479,10 @@ $(document).ready(function()
 
         // If append is clicked, set the flag so we know if we need to clear the last
         // results or not
-        $("#switch-id").on("click", function(event) 
+       $("#switch-id").on("click", function(event) 
         {
             var clicked = $(this).attr("isItOn");
+            console.log("Clicked", clicked);
 
             if (clicked == "true")
             {
@@ -484,6 +499,30 @@ $(document).ready(function()
 
             console.log("New clicked add more is ", $(this).attr("isItOn"));
         });
+
+        // If download is clicked, set the flag so we know if we need to download
+        // on click instead of animate
+       $("#download-id").on("click", function(event) 
+       {
+           var clicked = $(this).attr("isItOn");
+           console.log("Dowload Clicked", clicked);
+
+           if (clicked == "true")
+           {
+               downloadFlag = false;
+               $(this).attr("isItOn", "false");
+               console.log("change it to false");
+           }
+           else
+           {
+               downloadFlag = true;
+               $(this).attr("download", true);
+               console.log("change it to true");
+               $(this).attr("isItOn", "true");
+           }
+
+           console.log("New clicked add more is ", $(this).attr("isItOn"));
+       });
 
         // Sets the source where we'll pull the data - either Giphy or OMDB
         $("#db-option").on("click", function(event) 
