@@ -40,7 +40,8 @@ p {
 {
     position: relative;
     float: left;
-    width: 274px;
+    max-width: 274px;
+    width: 94%;
     height: 250px; 
     margin: 20px 10px 20px;
     overflow: auto;
@@ -51,8 +52,9 @@ p {
 .movie
 {
     background-color: rgb(172, 243, 243);
-    width: 500px;
-    margin: auto;
+    width: 94%;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .movie + .movie 
@@ -60,15 +62,6 @@ p {
     margin-top: 20px;
     margin-bottom: 20px;
 }
-
-/*
-img {
-    height: 200px;
-    width: 100%;
-    margin-left: 0px;
-    margin-right: 0px;
-}
-*/
 
 img {
     width: 100%;
