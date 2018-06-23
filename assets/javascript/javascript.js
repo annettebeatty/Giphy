@@ -28,9 +28,10 @@ $(document).ready(function()
         console.log("DB value clicked is ", dbValue);
         console.log("append flag = ", appendFlag);
 
-
+        // Check if we're pushing the same button again.  If we are, we'll give them the 
+        // next 10 GIFs
         if (lastFoodValue == food)
-        {
+        {   // Same category, so we'll ask Giphy for the next 10 results by giving an offset
             foodOffset += 9;
         }
         else
@@ -42,10 +43,9 @@ $(document).ready(function()
                 $("#food-view").empty();
             }
 
+            // Since this is a different category, start from a zero offset
             foodOffset = 0;
         }
-
-
 
         // I don't allow appending different formats.  We'll clear out the last display
         if (lastDBvalue != dbValue)
